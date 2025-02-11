@@ -6,7 +6,7 @@
         app:title="@string/profile_name"
         app:useSimpleSummaryProvider="true" />
 
-    <rikka.preference.SimpleMenuPreference
+    <com.takisoft.preferencex.SimpleMenuPreference
         app:defaultValue="2"
         app:entries="@array/hysteria_version"
         app:entryValues="@array/hysteria_version"
@@ -37,7 +37,7 @@
             app:key="serverObfs"
             app:title="@string/hysteria_obfs"
             app:useSimpleSummaryProvider="true" />
-        <rikka.preference.SimpleMenuPreference
+        <com.takisoft.preferencex.SimpleMenuPreference
             app:entries="@array/hysteria_auth_type"
             app:entryValues="@array/int_array_3"
             app:icon="@drawable/ic_baseline_compare_arrows_24"
@@ -48,7 +48,7 @@
             app:icon="@drawable/ic_settings_password"
             app:key="serverPassword"
             app:title="@string/hysteria_auth_payload" />
-        <rikka.preference.SimpleMenuPreference
+        <com.takisoft.preferencex.SimpleMenuPreference
             app:defaultValue="https"
             app:entries="@array/hysteria_protocol"
             app:entryValues="@array/int_array_3"

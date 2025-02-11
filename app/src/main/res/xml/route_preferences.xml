@@ -40,7 +40,7 @@
             app:key="routeSourcePort"
             app:title="sourcePort"
             app:useSimpleSummaryProvider="true" />
-        <rikka.preference.SimpleMenuPreference
+        <com.takisoft.preferencex.SimpleMenuPreference
             app:entries="@array/route_protocol_entry"
             app:entryValues="@array/route_protocol_value"
             app:icon="@drawable/ic_baseline_compare_arrows_24"
@@ -82,7 +82,7 @@
             app:key="routeNetworkIsExpensive"
             app:title="@string/network_expensive"
             app:useSimpleSummaryProvider="true" />
-        <rikka.preference.SimpleMenuPreference
+        <com.takisoft.preferencex.SimpleMenuPreference
             app:entries="@array/outbound_entry"
             app:entryValues="@array/int_array_4"
             app:icon="@drawable/ic_hardware_router"

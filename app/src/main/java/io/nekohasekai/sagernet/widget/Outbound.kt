@@ -2,7 +2,7 @@ package io.nekohasekai.sagernet.widget
 
 import io.nekohasekai.sagernet.database.DataStore
 import io.nekohasekai.sagernet.database.ProfileManager
-import rikka.preference.SimpleMenuPreference
+import com.takisoft.preferencex.SimpleMenuPreference
 
 /**
  * Allow this SimpleMenu to provide custom outbound.

@@ -6,7 +6,7 @@
         app:title="@string/group_name"
         app:useSimpleSummaryProvider="true" />
 
-    <rikka.preference.SimpleMenuPreference
+    <com.takisoft.preferencex.SimpleMenuPreference
         app:defaultValue="0"
         app:entries="@array/group_types"
         app:entryValues="@array/int_array_2"
@@ -15,7 +15,7 @@
         app:title="@string/group_type"
         app:useSimpleSummaryProvider="true" />
 
-    <rikka.preference.SimpleMenuPreference
+    <com.takisoft.preferencex.SimpleMenuPreference
         app:defaultValue="0"
         app:entries="@array/group_orders"
         app:entryValues="@array/int_array_3"
@@ -29,14 +29,14 @@
         app:key="groupIsSelector"
         app:title="@string/use_selector" />
 
-    <rikka.preference.SimpleMenuPreference
+    <com.takisoft.preferencex.SimpleMenuPreference
         app:entries="@array/extra_proxy_entry"
         app:entryValues="@array/int_array_2"
         app:icon="@drawable/ic_hardware_router"
         app:key="groupFrontProxy"
         app:title="@string/front_proxy" />
 
-    <rikka.preference.SimpleMenuPreference
+    <com.takisoft.preferencex.SimpleMenuPreference
         app:entries="@array/extra_proxy_entry"
         app:entryValues="@array/int_array_2"
         app:icon="@drawable/baseline_public_24"
@@ -47,7 +47,7 @@
         app:key="groupSubscription"
         app:title="@string/subscription_settings">
 
-        <rikka.preference.SimpleMenuPreference
+        <com.takisoft.preferencex.SimpleMenuPreference
             app:entries="@array/subscription_types"
             app:entryValues="@array/int_array_3"
             app:icon="@drawable/ic_baseline_nfc_24"

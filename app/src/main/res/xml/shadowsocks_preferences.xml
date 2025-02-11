@@ -17,7 +17,7 @@
             app:key="serverPort"
             app:title="@string/server_port"
             app:useSimpleSummaryProvider="true" />
-        <rikka.preference.SimpleMenuPreference
+        <com.takisoft.preferencex.SimpleMenuPreference
             app:entries="@array/ss_enc_method_value"
             app:entryValues="@array/ss_enc_method_value"
             app:icon="@drawable/ic_notification_enhanced_encryption"
@@ -42,14 +42,14 @@
             app:icon="@drawable/ic_baseline_bolt"
             app:key="serverBrutal"
             app:title="@string/enable_brutal" />
-        <rikka.preference.SimpleMenuPreference
+        <com.takisoft.preferencex.SimpleMenuPreference
             app:defaultValue="0"
             app:entries="@array/mux_types"
             app:entryValues="@array/int_array_3"
             app:key="serverMuxType"
             app:title="@string/mux_type"
             app:useSimpleSummaryProvider="true" />
-        <rikka.preference.SimpleMenuPreference
+        <com.takisoft.preferencex.SimpleMenuPreference
             app:defaultValue="0"
             app:entries="@array/mux_strategies"
             app:entryValues="@array/int_array_3"
@@ -70,7 +70,7 @@
     </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/plugin">
-        <rikka.preference.SimpleMenuPreference
+        <com.takisoft.preferencex.SimpleMenuPreference
             app:defaultValue=""
             app:entries="@array/box_shadowsocks_plugins"
             app:entryValues="@array/box_shadowsocks_plugins"

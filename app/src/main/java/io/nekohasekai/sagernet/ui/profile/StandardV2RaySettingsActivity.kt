@@ -14,7 +14,7 @@ import io.nekohasekai.sagernet.fmt.trojan.TrojanBean
 import io.nekohasekai.sagernet.fmt.v2ray.StandardV2RayBean
 import io.nekohasekai.sagernet.fmt.v2ray.VMessBean
 import io.nekohasekai.sagernet.fmt.v2ray.isTLS
-import rikka.preference.SimpleMenuPreference
+import com.takisoft.preferencex.SimpleMenuPreference
 
 abstract class StandardV2RaySettingsActivity : ProfileSettingsActivity<StandardV2RayBean>() {
 

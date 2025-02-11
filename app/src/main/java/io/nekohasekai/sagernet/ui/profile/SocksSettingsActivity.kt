@@ -9,7 +9,7 @@ import io.nekohasekai.sagernet.database.DataStore
 import io.nekohasekai.sagernet.database.preference.EditTextPreferenceModifiers
 import io.nekohasekai.sagernet.fmt.socks.SOCKSBean
 import io.nekohasekai.sagernet.ktx.applyDefaultValues
-import rikka.preference.SimpleMenuPreference
+import com.takisoft.preferencex.SimpleMenuPreference
 
 class SocksSettingsActivity : ProfileSettingsActivity<SOCKSBean>() {
     override fun createEntity() = SOCKSBean().applyDefaultValues()

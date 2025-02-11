@@ -9,7 +9,7 @@ import io.nekohasekai.sagernet.R
 import io.nekohasekai.sagernet.database.DataStore
 import io.nekohasekai.sagernet.database.preference.EditTextPreferenceModifiers
 import io.nekohasekai.sagernet.fmt.shadowsocks.ShadowsocksBean
-import rikka.preference.SimpleMenuPreference
+import com.takisoft.preferencex.SimpleMenuPreference
 
 class ShadowsocksSettingsActivity : ProfileSettingsActivity<ShadowsocksBean>() {
 

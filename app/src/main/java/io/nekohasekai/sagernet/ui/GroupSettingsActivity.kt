@@ -34,7 +34,7 @@ import io.nekohasekai.sagernet.widget.setOutbound
 import io.nekohasekai.sagernet.widget.updateOutboundSummary
 import kotlinx.parcelize.Parcelize
 import androidx.activity.addCallback
-import rikka.preference.SimpleMenuPreference
+import com.takisoft.preferencex.SimpleMenuPreference
 
 class GroupSettingsActivity(
     @LayoutRes resId: Int = R.layout.layout_config_settings,

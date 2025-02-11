@@ -42,7 +42,7 @@ import io.nekohasekai.sagernet.widget.updateOutboundSummary
 import io.nekohasekai.sagernet.widget.updateSummary
 import kotlinx.parcelize.Parcelize
 import androidx.activity.addCallback
-import rikka.preference.SimpleMenuPreference
+import com.takisoft.preferencex.SimpleMenuPreference
 
 class RouteSettingsActivity(
     @LayoutRes resId: Int = R.layout.layout_settings_activity,

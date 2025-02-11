@@ -14,7 +14,7 @@
             android:title="@string/theme"
             app:icon="@drawable/ic_baseline_color_lens_24"
             app:key="appTheme" />
-        <rikka.preference.SimpleMenuPreference
+        <com.takisoft.preferencex.SimpleMenuPreference
             app:defaultValue="0"
             app:entries="@array/night_mode"
             app:entryValues="@array/int_array_4"
@@ -22,7 +22,7 @@
             app:key="nightTheme"
             app:title="@string/night_mode"
             app:useSimpleSummaryProvider="true" />
-        <rikka.preference.SimpleMenuPreference
+        <com.takisoft.preferencex.SimpleMenuPreference
             app:defaultValue="vpn"
             app:entries="@array/service_modes"
             app:entryValues="@array/service_mode_values"
@@ -41,7 +41,7 @@
             app:shouldDisableView="true"
             app:title="Debug Listen"
             app:useSimpleSummaryProvider="true" />
-        <rikka.preference.SimpleMenuPreference
+        <com.takisoft.preferencex.SimpleMenuPreference
             app:defaultValue="2"
             app:entries="@array/tun_implementation"
             app:entryValues="@array/int_array_3"
@@ -60,7 +60,7 @@
             app:icon="@drawable/ic_baseline_transform_24"
             app:key="allowAppsBypassVpn"
             app:title="@string/allow_apps_bypass_vpn" />
-        <rikka.preference.SimpleMenuPreference
+        <com.takisoft.preferencex.SimpleMenuPreference
             app:defaultValue="1000"
             app:entries="@array/notification_entry"
             app:entryValues="@array/notification_value"
@@ -145,7 +145,7 @@
             app:key="resolveDestination"
             app:summary="@string/resolve_destination_summary"
             app:title="@string/resolve_destination" />
-        <rikka.preference.SimpleMenuPreference
+        <com.takisoft.preferencex.SimpleMenuPreference
             app:defaultValue="1"
             app:entries="@array/ipv6_mode"
             app:entryValues="@array/int_array_4"
@@ -153,7 +153,7 @@
             app:key="ipv6Mode"
             app:title="@string/ipv6"
             app:useSimpleSummaryProvider="true" />
-        <rikka.preference.SimpleMenuPreference
+        <com.takisoft.preferencex.SimpleMenuPreference
             app:defaultValue="0"
             app:entries="@array/network_interface_strategies"
             app:entryValues="@array/int_array_3"
@@ -168,7 +168,7 @@
             app:icon="@drawable/baseline_public_24"
             app:key="networkPreferredInterfaces"
             app:title="@string/network_interface_preference" />
-        <rikka.preference.SimpleMenuPreference
+        <com.takisoft.preferencex.SimpleMenuPreference
             app:defaultValue="0"
             app:entries="@array/rules_dat_provider"
             app:entryValues="@array/int_array_4"
@@ -199,7 +199,7 @@
             app:key="downloadSpeed"
             app:title="@string/hysteria_download_mbps"
             app:useSimpleSummaryProvider="true" />
-        <rikka.preference.SimpleMenuPreference
+        <com.takisoft.preferencex.SimpleMenuPreference
             app:defaultValue="0"
             app:entries="@array/plugin_providers"
             app:entryValues="@array/int_array_2"
@@ -224,7 +224,7 @@
             app:key="remoteDns"
             app:title="@string/remote_dns"
             app:useSimpleSummaryProvider="true" />
-        <rikka.preference.SimpleMenuPreference
+        <com.takisoft.preferencex.SimpleMenuPreference
             app:defaultValue="auto"
             app:entries="@array/dns_network_select"
             app:entryValues="@array/dns_network_select"
@@ -242,14 +242,14 @@
             app:key="directDns"
             app:title="@string/direct_dns"
             app:useSimpleSummaryProvider="true" />
-        <rikka.preference.SimpleMenuPreference
+        <com.takisoft.preferencex.SimpleMenuPreference
             app:defaultValue="auto"
             app:entries="@array/dns_network_select"
             app:entryValues="@array/dns_network_select"
             app:key="domain_strategy_for_direct"
             app:title="@string/domain_strategy_for_direct"
             app:useSimpleSummaryProvider="true" />
-        <rikka.preference.SimpleMenuPreference
+        <com.takisoft.preferencex.SimpleMenuPreference
             app:defaultValue="auto"
             app:entries="@array/dns_network_select"
             app:entryValues="@array/dns_network_select"
@@ -333,7 +333,7 @@
             app:key="acquireWakeLock"
             app:summary="@string/acquire_wake_lock_summary"
             app:title="@string/acquire_wake_lock" />
-        <rikka.preference.SimpleMenuPreference
+        <com.takisoft.preferencex.SimpleMenuPreference
             app:defaultValue="1"
             app:entries="@array/cert_provider"
             app:entryValues="@array/int_array_3"
@@ -351,7 +351,7 @@
             app:key="tcpKeepAliveInterval"
             app:title="@string/tcp_keep_alive_interval"
             app:useSimpleSummaryProvider="true" />
-        <rikka.preference.SimpleMenuPreference
+        <com.takisoft.preferencex.SimpleMenuPreference
             app:defaultValue="1.2"
             app:entries="@array/app_tls_version"
             app:entryValues="@array/app_tls_version"

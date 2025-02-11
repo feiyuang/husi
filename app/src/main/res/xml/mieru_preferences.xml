@@ -18,7 +18,7 @@
             app:key="serverPort"
             app:title="@string/server_port"
             app:useSimpleSummaryProvider="true" />
-        <rikka.preference.SimpleMenuPreference
+        <com.takisoft.preferencex.SimpleMenuPreference
             app:defaultValue="TCP"
             app:entries="@array/mieru_protocol"
             app:entryValues="@array/mieru_protocol"
@@ -40,7 +40,7 @@
             app:key="serverMTU"
             app:title="@string/mtu"
             app:useSimpleSummaryProvider="true" />
-        <rikka.preference.SimpleMenuPreference
+        <com.takisoft.preferencex.SimpleMenuPreference
             app:entries="@array/mieru_mux_level_value"
             app:entryValues="@array/int_array_4"
             app:icon="@drawable/ic_baseline_compare_arrows_24"

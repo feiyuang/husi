@@ -16,7 +16,7 @@
             app:key="serverPort"
             app:title="@string/server_port"
             app:useSimpleSummaryProvider="true" />
-        <rikka.preference.SimpleMenuPreference
+        <com.takisoft.preferencex.SimpleMenuPreference
             app:defaultValue="3"
             app:entries="@array/shadowtls_version_value"
             app:entryValues="@array/shadowtls_version_value"
@@ -53,7 +53,7 @@
             app:key="serverAllowInsecure"
             app:summary="@string/allow_insecure_sum"
             app:title="@string/allow_insecure" />
-        <rikka.preference.SimpleMenuPreference
+        <com.takisoft.preferencex.SimpleMenuPreference
             app:defaultValue=""
             app:entries="@array/utls_fingerprint_entry"
             app:entryValues="@array/utls_fingerprint_entry"

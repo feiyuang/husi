@@ -96,7 +96,8 @@ dependencies {
     implementation("com.google.guava:guava:33.4.0-android")
 
     implementation("androidx.room:room-runtime:2.6.1")
-    implementation("dev.rikka.rikkax.preference:simplemenu-preference:1.0.3")
+    // implementation("dev.rikka.rikkax.preference:simplemenu-preference:1.0.3")
+    implementation("com.takisoft.preferencex:preferencex-simplemenu:1.1.0")
     ksp("androidx.room:room-compiler:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
     implementation("com.github.MatrixDev.Roomigrant:RoomigrantLib:0.3.4")

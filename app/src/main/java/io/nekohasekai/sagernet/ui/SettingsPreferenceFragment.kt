@@ -33,7 +33,7 @@ import io.nekohasekai.sagernet.widget.LinkOrContentPreference
 import io.nekohasekai.sagernet.widget.updateSummary
 import moe.matsuri.nb4a.ui.ColorPickerPreference
 import moe.matsuri.nb4a.ui.LongClickListPreference
-import rikka.preference.SimpleMenuPreference
+import com.takisoft.preferencex.SimpleMenuPreference
 
 class SettingsPreferenceFragment : PreferenceFragmentCompat() {
 
