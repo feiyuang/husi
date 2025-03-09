@@ -1,10 +1,11 @@
-package moe.matsuri.nb4a;
+package io.nekohasekai.sagernet.fmt;
 
 import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
 import java.util.Map;
 
+@SuppressWarnings({"unused", "SpellCheckingInspection"})
 public class SingBoxOptions {
 
     public static final String NetworkTCP = "tcp";
@@ -16,6 +17,7 @@ public class SingBoxOptions {
 
     public static final String TYPE_TUN = "tun";
     public static final String TYPE_SELECTOR = "selector";
+    public static final String TYPE_URLTEST = "urltest";
     public static final String TYPE_MIXED = "mixed";
     public static final String TYPE_DIRECT = "direct";
     public static final String TYPE_HTTP = "http";
@@ -1444,17 +1446,6 @@ public class SingBoxOptions {
 
     }
 
-    public static class Outbound_SelectorOptions extends Outbound {
-
-        public List<String> outbounds;
-
-        @SerializedName("default")
-        public String default_;
-
-        public Boolean interrupt_exist_connections;
-
-    }
-
     public static class Outbound_SOCKSOptions extends Outbound {
 
         // Generate note: nested type DialerOptions
@@ -1977,6 +1968,33 @@ public class SingBoxOptions {
         public OutboundMultiplexOptions multiplex;
 
         public V2RayTransportOptions transport;
+
+    }
+
+    public static class Outbound_SelectorOptions extends Outbound {
+
+        public List<String> outbounds;
+
+        @SerializedName("default")
+        public String default_;
+
+        public Boolean interrupt_exist_connections;
+
+    }
+
+    public static class Outbound_URLTestOptions extends Outbound {
+
+        public List<String> outbounds;
+
+        public String url;
+
+        public String interval;
+
+        public Integer tolerance;
+
+        public String idle_timeout;
+
+        public Boolean interrupt_exist_connections;
 
     }
 

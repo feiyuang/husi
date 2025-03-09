@@ -49,7 +49,7 @@ type BoxInstance struct {
 	state   atomic.TypedValue[boxState]
 
 	platformInterface PlatformInterface
-	selector          *group.Selector
+	group             adapter.OutboundGroup
 	protect           *protect.Service
 	api               *combinedapi.CombinedAPI
 	anchor            *anchorservice.Anchor
@@ -108,10 +108,10 @@ func NewBoxInstance(config string, platformInterface PlatformInterface) (b *BoxI
 	}
 
 	if !forTest {
-		// selector
+		// group
 		if proxy, haveProxyOutbound := b.Box.Outbound().Outbound("proxy"); haveProxyOutbound {
-			if selector, isSelector := proxy.(*group.Selector); isSelector {
-				b.selector = selector
+			if group, isGroup := proxy.(adapter.OutboundGroup); isGroup {
+				b.group = group
 			}
 		}
 
@@ -167,6 +167,13 @@ func (b *BoxInstance) Start() (err error) {
 		debug.FreeOSMemory()
 	}
 
+	if b.group != nil {
+		switch b.group.(type) {
+		case *group.URLTest:
+			go b.watchGroupChange()
+		}
+	}
+
 	return nil
 }
 
@@ -211,11 +218,4 @@ func (b *BoxInstance) NeedWIFIState() bool {
 
 func (b *BoxInstance) QueryStats(tag string, isUpload bool) int64 {
 	return b.api.QueryStats(tag, isUpload)
-}
-
-func (b *BoxInstance) SelectOutbound(tag string) (ok bool) {
-	if b.selector != nil {
-		return b.selector.SelectOutbound(tag)
-	}
-	return false
 }

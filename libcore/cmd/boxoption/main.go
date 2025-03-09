@@ -131,7 +131,6 @@ var outboundList = []any{
 	option.DirectOutboundOptions{},
 	option.ShadowsocksOutboundOptions{},
 	option.ShadowTLSOutboundOptions{},
-	option.SelectorOutboundOptions{},
 	option.SOCKSOutboundOptions{},
 	option.HTTPOutboundOptions{},
 	option.SSHOutboundOptions{},
@@ -141,6 +140,8 @@ var outboundList = []any{
 	option.TUICOutboundOptions{},
 	option.VLESSOutboundOptions{},
 	option.VMessOutboundOptions{},
+	option.SelectorOutboundOptions{},
+	option.URLTestOutboundOptions{},
 	pluginoption.AnyTLSOutboundOptions{},
 }
 
