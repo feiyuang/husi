@@ -3,6 +3,7 @@ package libcore
 import (
 	"context"
 	"crypto/rand"
+	"os"
 	"syscall"
 	"time"
 
@@ -10,7 +11,9 @@ import (
 
 	"github.com/sagernet/sing-box/common/urltest"
 	"github.com/sagernet/sing/common/control"
+	E "github.com/sagernet/sing/common/exceptions"
 	M "github.com/sagernet/sing/common/metadata"
+	N "github.com/sagernet/sing/common/network"
 
 	"github.com/xchacha20-poly1305/libping"
 )
@@ -54,18 +57,30 @@ func TcpPing(host, port string, timeout int32) (latency int32, err error) {
 	return int32(l.Milliseconds()), nil
 }
 
-// UrlTest try to use default outbound to connect to link. `timeout` is Millisecond.
-func (b *BoxInstance) UrlTest(link string, timeout int32) (latency int32, err error) {
+// UrlTest try to use the outbound of tag to connect to link. `timeout` is Millisecond.
+// If tag is empty, it will use default outbound.
+func (b *BoxInstance) UrlTest(tag, link string, timeout int32) (latency int32, err error) {
 	defer catchPanic("box.UrlTest", func(panicErr error) { err = panicErr })
 
 	ctx, cancel := context.WithTimeout(b.ctx, time.Duration(timeout)*time.Millisecond)
 	defer cancel()
 
+	var dialer N.Dialer
+	if tag == "" {
+		dialer = b.Outbound().Default()
+	} else {
+		var loaded bool
+		dialer, loaded = b.Outbound().Outbound(tag)
+		if !loaded {
+			return -1, E.Cause(os.ErrInvalid, "not found tag")
+		}
+	}
+
 	// cancel context can't interrupt it in time.
 	chLatency := make(chan uint16, 1)
 	go func() {
 		var t uint16
-		t, err = urltest.URLTest(ctx, link, b.Outbound().Default())
+		t, err = urltest.URLTest(ctx, link, dialer)
 		if err != nil {
 			close(chLatency)
 			return

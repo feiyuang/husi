@@ -3,8 +3,15 @@ package libcore
 import (
 	"time"
 
+	"github.com/sagernet/sing-box/adapter"
+	"github.com/sagernet/sing-box/common/urltest"
+	C "github.com/sagernet/sing-box/constant"
 	"github.com/sagernet/sing-box/log"
 	"github.com/sagernet/sing-box/protocol/group"
+	"github.com/sagernet/sing/common"
+	"github.com/sagernet/sing/service"
+
+	"libcore/plugin"
 )
 
 func (b *BoxInstance) SelectOutbound(tag string) (ok bool) {
@@ -80,4 +87,79 @@ func (b *BoxInstance) watchGroupChange() {
 		updateTicker(changed)
 	}
 
+}
+
+type Group struct {
+	Tag        string
+	Type       string
+	Selected   string
+	Selectable bool
+}
+
+// GetGroup returns the main proxy group.
+func (b *BoxInstance) GetGroup() *Group {
+	if b.group == nil {
+		return nil
+	}
+	_, isSelector := b.group.(*group.Selector)
+	return &Group{
+		Tag:        b.group.Tag(),
+		Type:       b.group.Type(),
+		Selected:   b.group.Now(),
+		Selectable: isSelector,
+	}
+}
+
+type GroupItem struct {
+	Tag   string
+	Type  string
+	Delay int16 // Short
+}
+
+type GroupItemIterator interface {
+	Next() *GroupItem
+	HasNext() bool
+	Length() int32
+}
+
+// QueryGroup returns the group that named name's all items.
+func (b *BoxInstance) QueryGroup(name string) GroupItemIterator {
+	outbound, loaded := b.Outbound().Outbound(name)
+	if !loaded {
+		return nil
+	}
+	outboundGroup, isGroup := outbound.(adapter.OutboundGroup)
+	if !isGroup {
+		return nil
+	}
+
+	historyStorage := service.PtrFromContext[urltest.HistoryStorage](b.ctx)
+	tags := outboundGroup.All()
+	outboundManager := b.Outbound()
+	items := common.Map(tags, func(it string) *GroupItem {
+		outbound, _ := outboundManager.Outbound(it) // must
+
+		var delay int16 = -1
+		if historyStorage != nil {
+			if history := historyStorage.LoadURLTestHistory(it); history != nil {
+				delay = int16(history.Delay)
+			}
+		}
+
+		return &GroupItem{
+			Tag:   it,
+			Type:  proxyDisplayName(outbound.Type()),
+			Delay: delay,
+		}
+	})
+
+	return newIterator(items)
+}
+
+func proxyDisplayName(proxyType string) string {
+	pluginName, loaded := plugin.TypeMap[proxyType]
+	if loaded {
+		return pluginName
+	}
+	return C.ProxyDisplayName(proxyType)
 }

@@ -592,4 +592,6 @@
     <string name="idle_timeout">空闲超时</string>
     <string name="urltest_tolerance">容差</string>
     <string name="action_proxy_group">代理组</string>
+    <string name="expand">展开</string>
+    <string name="selected">已选择</string>
 </resources>

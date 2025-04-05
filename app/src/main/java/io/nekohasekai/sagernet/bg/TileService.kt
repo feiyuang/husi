@@ -29,11 +29,6 @@ class TileService : BaseTileService(), SagerConnection.Callback {
         }
     }
 
-    override fun cbSelectorUpdate(id: Long) {
-        val profile = SagerDatabase.proxyDao.getById(id) ?: return
-        updateTile(BaseService.State.Connected, profile.displayName())
-    }
-
     override fun onStartListening() {
         super.onStartListening()
         connection.connect(this, this)

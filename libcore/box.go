@@ -110,9 +110,7 @@ func NewBoxInstance(config string, platformInterface PlatformInterface) (b *BoxI
 	if !forTest {
 		// group
 		if proxy, haveProxyOutbound := b.Box.Outbound().Outbound("proxy"); haveProxyOutbound {
-			if group, isGroup := proxy.(adapter.OutboundGroup); isGroup {
-				b.group = group
-			}
+			b.group, _ = proxy.(adapter.OutboundGroup)
 		}
 
 		// Protect
@@ -149,7 +147,7 @@ func (b *BoxInstance) Start() (err error) {
 	b.state.Store(boxStateRunning)
 	err = b.Box.Start()
 	if err != nil {
-		return err
+		return E.Cause(err, "start box")
 	}
 
 	if b.protect != nil {
@@ -168,8 +166,7 @@ func (b *BoxInstance) Start() (err error) {
 	}
 
 	if b.group != nil {
-		switch b.group.(type) {
-		case *group.URLTest:
+		if _, isURLTest := b.group.(*group.URLTest); isURLTest {
 			go b.watchGroupChange()
 		}
 	}

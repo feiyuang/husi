@@ -40,7 +40,6 @@ class SagerConnection(
 
         fun cbSpeedUpdate(stats: SpeedDisplayData) {}
         fun cbTrafficUpdate(data: TrafficData) {}
-        fun cbSelectorUpdate(id: Long) {}
 
         fun stateChanged(state: BaseService.State, profileName: String?, msg: String?)
 
@@ -54,7 +53,7 @@ class SagerConnection(
         fun onServiceDisconnected() {}
         fun onBinderDied() {}
         fun statusUpdate(dashboardStatus: DashboardStatus) {}
-        fun clashModeUpdate(mode: String) {}
+        fun groupSwitch(group: String, tag: String) {}
     }
 
     private var connectionActive = false
@@ -90,6 +89,13 @@ class SagerConnection(
             val callback = callback ?: return
             runOnMainDispatcher {
                 callback.statusUpdate(dashboardStatus)
+            }
+        }
+
+        override fun groupSwitch(group: String, tag: String) {
+            val callback = callback ?: return
+            runOnMainDispatcher {
+                callback.groupSwitch(group, tag)
             }
         }
 

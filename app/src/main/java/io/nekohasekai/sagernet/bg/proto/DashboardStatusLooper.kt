@@ -1,11 +1,11 @@
 package io.nekohasekai.sagernet.bg.proto
 
 import io.nekohasekai.sagernet.aidl.DashboardStatus
+import io.nekohasekai.sagernet.aidl.toList
 import io.nekohasekai.sagernet.bg.BaseService
 import io.nekohasekai.sagernet.database.DataStore
 import io.nekohasekai.sagernet.ktx.Logs
 import io.nekohasekai.sagernet.ktx.runOnDefaultDispatcher
-import io.nekohasekai.sagernet.ktx.toConnectionList
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -33,7 +33,7 @@ class DashboardStatusLooper(
                 data.binder.broadcast { work ->
                     work.dashboardStatusUpdate(
                         DashboardStatus(
-                            data.proxy!!.box.trackerInfos.toConnectionList(),
+                            data.proxy!!.box.trackerInfos.toList(),
                             Libcore.getMemory(),
                             Libcore.getGoroutines(),
                             false,

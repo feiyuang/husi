@@ -16,10 +16,17 @@ import (
 	N "github.com/sagernet/sing/common/network"
 	"github.com/sagernet/sing/common/uot"
 
+	"libcore/plugin"
 	"libcore/plugin/pluginoption"
 
 	"github.com/anytls/sing-anytls"
 )
+
+const DisplayName = "AnyTLS"
+
+func init() {
+	plugin.TypeMap[pluginoption.TypeAnyTLS] = DisplayName
+}
 
 func RegisterOutbound(registry *outbound.Registry) {
 	outbound.Register[pluginoption.AnyTLSOutboundOptions](registry, pluginoption.TypeAnyTLS, NewOutbound)

@@ -15,11 +15,13 @@ import io.nekohasekai.sagernet.Action
 import io.nekohasekai.sagernet.BootReceiver
 import io.nekohasekai.sagernet.R
 import io.nekohasekai.sagernet.SagerNet
+import io.nekohasekai.sagernet.aidl.Group
+import io.nekohasekai.sagernet.aidl.GroupItem
 import io.nekohasekai.sagernet.aidl.ISagerNetService
 import io.nekohasekai.sagernet.aidl.ISagerNetServiceCallback
+import io.nekohasekai.sagernet.aidl.toList
 import io.nekohasekai.sagernet.bg.proto.ProxyInstance
 import io.nekohasekai.sagernet.database.DataStore
-import io.nekohasekai.sagernet.database.ProxyEntity
 import io.nekohasekai.sagernet.database.SagerDatabase
 import io.nekohasekai.sagernet.ktx.Logs
 import io.nekohasekai.sagernet.ktx.broadcastReceiver
@@ -155,12 +157,13 @@ class BaseService {
             callbacks.unregister(cb)
         }
 
-        override fun urlTest(): Int {
+        override fun urlTest(tag: String?): Int {
             if (data?.proxy?.box == null) {
                 error("core not started")
             }
             try {
                 return data!!.proxy!!.box.urlTest(
+                    tag,
                     DataStore.connectionTestURL,
                     DataStore.connectionTestTimeout,
                 )
@@ -196,6 +199,20 @@ class BaseService {
 
         override fun setClashMode(mode: String?) {
             data?.proxy?.box?.clashMode = mode
+        }
+
+        override fun groupSelecte(group: String, tag: String) {
+            data?.proxy?.box?.selectOutbound(tag)
+        }
+
+        override fun getGroups(): List<Group> {
+            return data?.proxy?.box?.group?.let {
+                listOf(Group(it))
+            } ?: emptyList()
+        }
+
+        override fun queryGroup(group: String): List<GroupItem> {
+            return data?.proxy?.box?.queryGroup(group)?.toList() ?: emptyList()
         }
 
         fun stateChanged(s: State, msg: String?) = launch {

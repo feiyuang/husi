@@ -20,12 +20,15 @@ import io.nekohasekai.sagernet.ui.MainActivity
 import io.nekohasekai.sagernet.ui.ToolbarFragment
 import moe.matsuri.nb4a.utils.setOnFocusCancel
 
-const val POSITION_STATUS = 0
-const val POSITION_CONNECTIONS = 1
-
 class TrafficFragment : ToolbarFragment(R.layout.layout_traffic),
     Toolbar.OnMenuItemClickListener,
     SearchView.OnQueryTextListener {
+
+    companion object {
+        const val POSITION_STATUS = 0
+        const val POSITION_CONNECTIONS = 1
+        const val POSITION_GROUP = 2
+    }
 
     private lateinit var binding: LayoutTrafficBinding
     private lateinit var adapter: TrafficAdapter
@@ -45,6 +48,7 @@ class TrafficFragment : ToolbarFragment(R.layout.layout_traffic),
             tab.text = when (position) {
                 POSITION_STATUS -> getString(R.string.traffic_status)
                 POSITION_CONNECTIONS -> getString(R.string.traffic_connections)
+                POSITION_GROUP -> getString(R.string.action_proxy_group)
                 else -> throw IllegalArgumentException()
             }
             tab.view.setOnLongClickListener {
@@ -193,7 +197,7 @@ class TrafficFragment : ToolbarFragment(R.layout.layout_traffic),
     fun emitStats(dashboardStatus: DashboardStatus) {
         when (binding.trafficPager.currentItem) {
             POSITION_STATUS -> {
-                val dashboard = getFragment(POSITION_STATUS) as? StatusFragment ?: return
+                val dashboard = getFragment<StatusFragment>(POSITION_STATUS) ?: return
                 if (dashboardStatus.isStop) {
                     dashboard.clearStats()
                 } else {
@@ -204,7 +208,7 @@ class TrafficFragment : ToolbarFragment(R.layout.layout_traffic),
             POSITION_CONNECTIONS -> {
                 if (isPausing) return
                 val connectionFragment =
-                    getFragment(POSITION_CONNECTIONS) as? ConnectionListFragment ?: return
+                    getFragment<ConnectionListFragment>(POSITION_CONNECTIONS) ?: return
                 connectionFragment.emitStats(dashboardStatus.connections)
             }
         }
@@ -212,16 +216,21 @@ class TrafficFragment : ToolbarFragment(R.layout.layout_traffic),
 
     fun refreshClashMode() {
         if (binding.trafficPager.currentItem != POSITION_STATUS) return
-        (getFragment(POSITION_STATUS) as? StatusFragment)?.refreshClashMode()
+        getFragment<StatusFragment>(POSITION_STATUS)?.refreshClashMode()
     }
 
-    private fun getFragment(position: Int): Fragment? {
-        return adapter.getCurrentFragment(position)
+    fun groupSwitch(group: String, tag: String) {
+        if (binding.trafficPager.currentItem != POSITION_GROUP) return
+        getFragment<DashboardGroup>(POSITION_GROUP)?.groupSwitch(group, tag)
+    }
+
+    private inline fun <reified T : Fragment> getFragment(position: Int): T? {
+        return adapter.getCurrentFragment(position) as? T
     }
 
     inner class TrafficAdapter(fragment: Fragment) : FragmentStateAdapter(fragment) {
         override fun getItemCount(): Int {
-            return 2
+            return 3
         }
 
         override fun createFragment(position: Int): Fragment {
@@ -232,6 +241,10 @@ class TrafficFragment : ToolbarFragment(R.layout.layout_traffic),
 
                 POSITION_CONNECTIONS -> ConnectionListFragment().also {
                     searchView.isVisible = true
+                }
+
+                POSITION_GROUP -> DashboardGroup().also {
+                    searchView.isVisible = false
                 }
 
                 else -> throw IllegalArgumentException()
@@ -246,12 +259,12 @@ class TrafficFragment : ToolbarFragment(R.layout.layout_traffic),
     private lateinit var searchView: SearchView
 
     override fun onQueryTextSubmit(query: String?): Boolean {
-        (getFragment(POSITION_CONNECTIONS) as? ConnectionListFragment)?.searchString = query
+        getFragment<ConnectionListFragment>(POSITION_CONNECTIONS)?.searchString = query
         return false
     }
 
     override fun onQueryTextChange(query: String?): Boolean {
-        (getFragment(POSITION_CONNECTIONS) as? ConnectionListFragment)?.searchString = query
+        getFragment<ConnectionListFragment>(POSITION_CONNECTIONS)?.searchString = query
         return false
     }
 }

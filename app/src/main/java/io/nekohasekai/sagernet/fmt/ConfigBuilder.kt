@@ -408,14 +408,14 @@ fun buildConfig(
                     bypassDNSBeans.add(proxyEntity.requireBean())
                 }
 
-                // last profile set as "proxy"
-                if (chainId == 0L && index == 0) {
-                    tagOut = TAG_PROXY
-                }
-
-                // human readable name
                 if (index == 0) {
-                    tagOut = generateReadableName(bean.displayName())
+                    tagOut = if (chainId == 0L) {
+                        // last profile set as "proxy"
+                        TAG_PROXY
+                    } else {
+                        // human readable name
+                        generateReadableName(bean.displayName())
+                    }
                 }
 
                 // chain rules

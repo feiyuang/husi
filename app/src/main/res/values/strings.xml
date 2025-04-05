@@ -665,4 +665,6 @@
     <string name="idle_timeout">IDLE Timeout</string>
     <string name="urltest_tolerance">Tolerance</string>
     <string name="action_proxy_group">Proxy Group</string>
+    <string name="expand">Expand</string>
+    <string name="selected">Selected</string>
 </resources>

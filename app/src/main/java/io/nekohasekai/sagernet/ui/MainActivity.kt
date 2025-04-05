@@ -61,6 +61,7 @@ import io.nekohasekai.sagernet.widget.ListHolderListener
 import io.nekohasekai.sfa.utils.MIUIUtils
 import moe.matsuri.nb4a.utils.Util
 import java.io.File
+import androidx.core.net.toUri
 
 class MainActivity : ThemedActivity(),
     SagerConnection.Callback,
@@ -172,11 +173,11 @@ class MainActivity : ThemedActivity(),
         }
     }
 
-    fun urlTest(): Int {
+    fun urlTest(tag: String? = null): Int {
         if (!DataStore.serviceState.connected || connection.service == null) {
             error("not started")
         }
-        return connection.service!!.urlTest()
+        return connection.service!!.urlTest(tag)
     }
 
     suspend fun importSubscription(uri: Uri) {
@@ -192,7 +193,7 @@ class MainActivity : ThemedActivity(),
                 }
             }
         )
-        if (!url.isNullOrBlank()) {
+        if (url.isNotBlank()) {
             group = ProxyGroup(type = GroupType.SUBSCRIPTION)
             val subscription = SubscriptionBean()
             group.subscription = subscription
@@ -461,6 +462,11 @@ class MainActivity : ThemedActivity(),
             ?.emitStats(dashboardStatus)
     }
 
+    override fun groupSwitch(group: String, tag: String) {
+        (supportFragmentManager.findFragmentById(R.id.fragment_holder) as? TrafficFragment)
+            ?.groupSwitch(group, tag)
+    }
+
     override fun onPreferenceDataStoreChanged(store: PreferenceDataStore, key: String) {
         when (key) {
             Key.SERVICE_MODE -> onBinderDied()
@@ -581,7 +587,7 @@ class MainActivity : ThemedActivity(),
 
         try {
             val intent = Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-            intent.data = Uri.parse("package:$packageName")
+            intent.data = "package:$packageName".toUri()
             startActivity(intent)
         } catch (e: Exception) {
             Logs.e(e.readableMessage)
