@@ -9,3 +9,4 @@ func dup(oldFd, newFd, flags int) error {
 func flock(fd int) (unlock func() error) {
 	return nil
 }
+

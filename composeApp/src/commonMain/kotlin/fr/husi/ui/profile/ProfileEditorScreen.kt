@@ -172,6 +172,12 @@ fun ProfileEditorScreen(
                 onResult = onResult,
             )
 
+            ProxyEntity.TYPE_SSR -> SSRSettingsScreen(
+                profileId = profileId,
+                isSubscription = isSubscription,
+                onResult = onResult,
+            )
+
             ProxyEntity.TYPE_NAIVE -> NaiveSettingsScreen(
                 profileId = profileId,
                 isSubscription = isSubscription,
