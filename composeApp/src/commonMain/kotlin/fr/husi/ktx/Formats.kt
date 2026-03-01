@@ -12,6 +12,7 @@ import fr.husi.fmt.naive.parseNaive
 import fr.husi.fmt.parseUniversal
 import fr.husi.fmt.shadowsocks.parseShadowsocks
 import fr.husi.fmt.socks.parseSOCKS
+import fr.husi.fmt.ssr.parseSSR
 import fr.husi.fmt.trojan.parseTrojan
 import fr.husi.fmt.tuic.parseTuic
 import fr.husi.fmt.v2ray.parseV2Ray
@@ -164,6 +165,15 @@ suspend fun parseProxies(text: String): List<AbstractBean> {
                 Logs.d("Try parse shadowsocks link: $this")
                 runCatching {
                     entities.add(parseShadowsocks(this))
+                }.onFailure {
+                    Logs.w(it)
+                }
+            }
+
+            "ssr" -> {
+                Logs.d("Try parse shadowsocksr link: $this")
+                runCatching {
+                    entities.add(parseSSR(this))
                 }.onFailure {
                     Logs.w(it)
                 }

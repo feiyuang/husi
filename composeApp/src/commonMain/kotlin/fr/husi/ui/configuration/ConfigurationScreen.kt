@@ -106,6 +106,7 @@ import fr.husi.resources.action_mieru
 import fr.husi.resources.action_naive
 import fr.husi.resources.action_shadowquic
 import fr.husi.resources.action_shadowsocks
+import fr.husi.resources.action_ssr
 import fr.husi.resources.action_shadowtls
 import fr.husi.resources.action_socks
 import fr.husi.resources.action_ssh
@@ -437,6 +438,17 @@ fun ConfigurationScreen(
                                         showAddManualMenu = false
                                         openProfileEditor?.invoke(
                                             ProxyEntity.TYPE_SS,
+                                            -1L,
+                                            false,
+                                        ) {}
+                                    },
+                                )
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(Res.string.action_ssr)) },
+                                    onClick = {
+                                        showAddManualMenu = false
+                                        openProfileEditor?.invoke(
+                                            ProxyEntity.TYPE_SSR,
                                             -1L,
                                             false,
                                         ) {}
