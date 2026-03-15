@@ -58,6 +58,24 @@ remove_build_tag() {
     echo "${kept_tags[*]}"
 }
 
+add_build_tag() {
+    local build_tags="$1"
+    local add_tag="$2"
+    local tag
+    IFS="," read -r -a input_tags <<< "$build_tags"
+    for tag in "${input_tags[@]}"; do
+        if [ "$tag" == "$add_tag" ]; then
+            echo "$build_tags"
+            return
+        fi
+    done
+    if [ -z "$build_tags" ]; then
+        echo "$add_tag"
+        return
+    fi
+    echo "$build_tags,$add_tag"
+}
+
 read_gn_string_var() {
     local file="$1"
     local key="$2"
@@ -186,6 +204,42 @@ apply_darwin_toolchain_env() {
     export CGO_CFLAGS="-isysroot $SDKROOT -mmacos-version-min=$MACOSX_DEPLOYMENT_TARGET"
     export CGO_CXXFLAGS="$CGO_CFLAGS"
     export CGO_LDFLAGS="-isysroot $SDKROOT -mmacos-version-min=$MACOSX_DEPLOYMENT_TARGET"
+}
+
+apply_windows_toolchain_env() {
+    local desktop_target="$1"
+    local host_platform
+    local arch="${desktop_target#*/}"
+    local zig_target
+
+    host_platform="$(go env GOOS)"
+
+    case "$arch" in
+    arm64)
+        zig_target="aarch64-windows-gnu"
+        ;;
+    amd64)
+        zig_target="x86_64-windows-gnu"
+        ;;
+    *)
+        echo "Unsupported Windows desktop target: $desktop_target"
+        exit 1
+        ;;
+    esac
+
+    if [ "$host_platform" == "windows" ]; then
+        return
+    fi
+
+    if ! command -v zig >/dev/null 2>&1; then
+        echo "Missing zig compiler in PATH for Windows desktop target $desktop_target"
+        exit 1
+    fi
+
+    export CC="zig cc -target $zig_target"
+    export CXX="zig c++ -target $zig_target"
+    export CGO_CFLAGS="-O2 -fno-sanitize=undefined -fno-sanitize=integer"
+    export CGO_CXXFLAGS="$CGO_CFLAGS"
 }
 
 apply_naive_toolchain_env() {
@@ -328,12 +382,17 @@ if [ "$BUILD_DESKTOP" == "1" ]; then
             desktop_target="$(resolve_host_desktop_target)"
         fi
         desktop_platform="${desktop_target%%/*}"
+        if [ "$desktop_platform" == "windows" ] && [[ ",$local_build_tags," == *",with_naive_outbound,"* ]]; then
+            local_build_tags="$(add_build_tag "$local_build_tags" "with_purego")"
+        fi
         desktop_output="$(desktop_jar_name "$desktop_target")"
         if [ -f "$desktop_output" ]; then
             rm -f "$desktop_output"
         fi
         unset CC CXX SDKROOT MACOSX_DEPLOYMENT_TARGET CGO_CFLAGS CGO_CXXFLAGS CGO_LDFLAGS QEMU_LD_PREFIX
-        if [[ ",$local_build_tags," == *",with_naive_outbound,"* ]]; then
+        if [ "$desktop_platform" == "windows" ]; then
+            apply_windows_toolchain_env "$desktop_target"
+        elif [[ ",$local_build_tags," == *",with_naive_outbound,"* ]]; then
             apply_naive_toolchain_env "$desktop_target"
         elif [ "$host_platform" != "darwin" ] && [ "$desktop_platform" == "darwin" ]; then
             apply_darwin_toolchain_env "$desktop_target"

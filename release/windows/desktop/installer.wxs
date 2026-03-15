@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Product
+      Id="*"
+      Name="__HUSI_APP_NAME__"
+      Language="1033"
+      Manufacturer="__HUSI_MAINTAINER__"
+      Version="__HUSI_MSI_VERSION__"
+      UpgradeCode="e1a766c7-1f56-50c1-a748-474b713f061a">
+    <Package
+        InstallerVersion="500"
+        Compressed="yes"
+        InstallScope="perUser" />
+    <MajorUpgrade DowngradeErrorMessage="__HUSI_MSI_DOWNGRADE_ERROR__" />
+    <MediaTemplate EmbedCab="yes" />
+    <Property Id="ARPNOMODIFY" Value="1" />
+    <Property Id="ARPURLINFOABOUT" Value="__HUSI_APP_URL__" />
+
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="LocalAppDataFolder">
+        <Directory Id="ProgramsFolder" Name="Programs">
+          <Directory Id="INSTALLDIR" Name="__HUSI_APP_NAME__">
+            <Component Id="ApplicationFiles" Guid="*" Win64="yes">
+              <File Id="MainExecutableFile" KeyPath="yes" Source="installer-root/__HUSI_APP_NAME__.exe" />
+              <File Id="LicenseFile" Source="installer-root/LICENSE" />
+              <File Id="JavaOptionsTemplateFile" Source="installer-root/desktop-java-opts.conf.template" />
+              <File Id="AppArgsTemplateFile" Source="installer-root/desktop-app-args.conf.template" />
+            </Component>
+            <Directory Id="APPDIR" Name="app">
+              <Component Id="JarFileComponent" Guid="*" Win64="yes">
+                <File Id="JarFile" KeyPath="yes" Source="installer-root/app/__HUSI_PACKAGE_NAME__.jar" />
+              </Component>
+            </Directory>
+          </Directory>
+        </Directory>
+      </Directory>
+      <Directory Id="ProgramMenuFolder">
+        <Directory Id="ProgramMenuAppDir" Name="__HUSI_APP_NAME__">
+          <Component Id="StartMenuComponent" Guid="*" Win64="yes">
+            <Shortcut
+                Id="ApplicationShortcut"
+                Name="__HUSI_APP_NAME__"
+                Description="__HUSI_APP_DESCRIPTION__"
+                Target="[#MainExecutableFile]"
+                WorkingDirectory="INSTALLDIR"
+                Advertise="no" />
+            <RemoveFolder Id="RemoveProgramMenuAppDir" On="uninstall" />
+            <RegistryValue
+                Root="HKCU"
+                Key="Software\__HUSI_PACKAGE_NAME__\Installer"
+                Name="StartMenuShortcut"
+                Type="integer"
+                Value="1"
+                KeyPath="yes" />
+          </Component>
+        </Directory>
+      </Directory>
+    </Directory>
+
+    <DirectoryRef Id="INSTALLDIR">
+      <Component Id="UrlSchemeComponent" Guid="*" Win64="yes">
+        <RegistryValue
+            Root="HKCU"
+            Key="Software\__HUSI_PACKAGE_NAME__\Installer"
+            Name="UrlSchemes"
+            Type="integer"
+            Value="1"
+            KeyPath="yes" />
+__HUSI_URL_SCHEME_REGISTRY__
+      </Component>
+    </DirectoryRef>
+
+    <Feature Id="MainFeature" Title="__HUSI_APP_NAME__" Level="1">
+      <ComponentRef Id="ApplicationFiles" />
+      <ComponentRef Id="JarFileComponent" />
+      <ComponentRef Id="StartMenuComponent" />
+      <ComponentRef Id="UrlSchemeComponent" />
+    </Feature>
+  </Product>
+</Wix>

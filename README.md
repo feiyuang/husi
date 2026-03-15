@@ -225,6 +225,7 @@ This dispatches to the host-native packaging flow:
 
 * Linux: `make desktop_package_linux`
 * macOS: `make desktop_package_macos`
+* Windows/MSYS: `make desktop_package_windows`
 
 Build an **uber JAR** that runs on system Java (no bundled JRE/runtime image):
 
@@ -331,6 +332,35 @@ User config files are created under:
 
 * `~/Library/Application Support/husi/desktop-java-opts.conf` for JVM options
 * `~/Library/Application Support/husi/desktop-app-args.conf` for application startup arguments
+
+Build Windows portable zip and MSI installer packages:
+
+```shell
+make desktop_package_windows DESKTOP_TARGET=windows/amd64
+```
+
+This command builds the uber jar first, then packages it with the same Zig launcher used by Linux and macOS.
+Required host tools:
+
+* `zig`
+* `git`
+* `python3`
+* `wixl` or WiX Toolset
+
+Default output directory:
+
+```shell
+composeApp/build/compose/packages/windows/
+```
+
+Outputs:
+
+* `<PACKAGE_NAME>-<VERSION_NAME>-windows-<arch>.zip`
+* `<PACKAGE_NAME>-<VERSION_NAME>-windows-<arch>-installer.msi`
+
+The installer is a per-user MSI that installs into `%LOCALAPPDATA%\Programs\Husi`,
+creates a Start Menu shortcut, and registers the configured URL schemes for the current user.
+The Windows launcher embeds an application manifest and requests administrator elevation via UAC at launch time.
 
 #### 🌈 Plugins
 

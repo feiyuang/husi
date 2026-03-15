@@ -1,16 +1,12 @@
 package libcore
 
 import (
-	"net"
-
 	C "github.com/sagernet/sing-box/constant"
 	"github.com/sagernet/sing-tun"
 	"github.com/sagernet/sing/common/control"
 	E "github.com/sagernet/sing/common/exceptions"
 	"github.com/sagernet/sing/common/logger"
 	"github.com/sagernet/sing/common/x/list"
-
-	"golang.org/x/sys/unix"
 )
 
 var (
@@ -142,28 +138,4 @@ func (m *interfaceMonitor) UpdateDefaultInterface(interfaceName string, interfac
 	for _, callback := range callbacks {
 		callback(newInterface, 0)
 	}
-}
-
-// copied from net.linkFlags
-func linkFlags(rawFlags uint32) net.Flags {
-	var f net.Flags
-	if rawFlags&unix.IFF_UP != 0 {
-		f |= net.FlagUp
-	}
-	if rawFlags&unix.IFF_RUNNING != 0 {
-		f |= net.FlagRunning
-	}
-	if rawFlags&unix.IFF_BROADCAST != 0 {
-		f |= net.FlagBroadcast
-	}
-	if rawFlags&unix.IFF_LOOPBACK != 0 {
-		f |= net.FlagLoopback
-	}
-	if rawFlags&unix.IFF_POINTOPOINT != 0 {
-		f |= net.FlagPointToPoint
-	}
-	if rawFlags&unix.IFF_MULTICAST != 0 {
-		f |= net.FlagMulticast
-	}
-	return f
 }

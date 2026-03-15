@@ -9,8 +9,8 @@ const native_os = builtin.os.tag;
 
 comptime {
     switch (native_os) {
-        .linux, .macos => {},
-        else => @compileError("This launcher requires Linux or macOS."),
+        .linux, .macos, .windows => {},
+        else => @compileError("This launcher only supports Linux, macOS and Windows."),
     }
 }
 
@@ -19,160 +19,169 @@ const husi_package_name = config.package_name;
 const husi_config_dir_name = "husi";
 const husi_exit_restart = 50;
 
-const PlatformPrivilege = if (native_os == .linux) struct {
-    const linux = std.os.linux;
+const PlatformPrivilege = switch (native_os) {
+    .linux => struct {
+        const linux = std.os.linux;
 
-    const CAP_VERSION_3: u32 = 0x20080522;
-    const CAP_DAC_READ_SEARCH = 2;
-    const CAP_NET_BIND_SERVICE = 10;
-    const CAP_NET_ADMIN = 12;
-    const CAP_NET_RAW = 13;
-    const CAP_SETPCAP = 8;
-    const CAP_SYS_PTRACE = 19;
+        const CAP_VERSION_3: u32 = 0x20080522;
+        const CAP_DAC_READ_SEARCH = 2;
+        const CAP_NET_BIND_SERVICE = 10;
+        const CAP_NET_ADMIN = 12;
+        const CAP_NET_RAW = 13;
+        const CAP_SETPCAP = 8;
+        const CAP_SYS_PTRACE = 19;
 
-    const PR_CAP_AMBIENT = 47;
-    const PR_CAP_AMBIENT_RAISE = 2;
+        const PR_CAP_AMBIENT = 47;
+        const PR_CAP_AMBIENT_RAISE = 2;
 
-    const CapHeader = extern struct {
-        version: u32,
-        pid: c_int,
-    };
-
-    const CapData = extern struct {
-        effective: u32,
-        permitted: u32,
-        inheritable: u32,
-    };
-
-    fn capget(header: *CapHeader, data: *[2]CapData) !void {
-        const result = linux.syscall2(.capget, @intFromPtr(header), @intFromPtr(data));
-        switch (posix.errno(result)) {
-            .SUCCESS => {},
-            else => |err| return posix.unexpectedErrno(err),
-        }
-    }
-
-    fn capset(header: *const CapHeader, data: *const [2]CapData) !void {
-        const result = linux.syscall2(.capset, @intFromPtr(header), @intFromPtr(data));
-        switch (posix.errno(result)) {
-            .SUCCESS => {},
-            else => |err| return posix.unexpectedErrno(err),
-        }
-    }
-
-    fn setInheritableCaps(caps: []const c_int) !void {
-        var header = CapHeader{
-            .version = CAP_VERSION_3,
-            .pid = 0,
-        };
-        var data = [2]CapData{
-            .{ .effective = 0, .permitted = 0, .inheritable = 0 },
-            .{ .effective = 0, .permitted = 0, .inheritable = 0 },
+        const CapHeader = extern struct {
+            version: u32,
+            pid: c_int,
         };
 
-        try capget(&header, &data);
+        const CapData = extern struct {
+            effective: u32,
+            permitted: u32,
+            inheritable: u32,
+        };
 
-        for (caps) |cap| {
-            const index: u32 = @intCast(@as(u32, @bitCast(cap)) / 32);
-            const bit: u32 = @as(u32, 1) << @intCast(@as(u32, @bitCast(cap)) % 32);
-
-            if (index >= 2) {
-                std.debug.print("unsupported capability index: {d}\n", .{cap});
-                return error.UnsupportedCap;
-            }
-            if ((data[index].permitted & bit) == 0) {
-                std.debug.print("missing permitted capability: {d}\n", .{cap});
-                return error.MissingPermittedCap;
-            }
-            data[index].inheritable |= bit;
-        }
-
-        try capset(&header, &data);
-    }
-
-    fn raiseAmbientCaps(caps: []const c_int) !void {
-        for (caps) |cap| {
-            const result = linux.prctl(PR_CAP_AMBIENT, PR_CAP_AMBIENT_RAISE, @intCast(cap), 0, 0);
+        fn capget(header: *CapHeader, data: *[2]CapData) !void {
+            const result = linux.syscall2(.capget, @intFromPtr(header), @intFromPtr(data));
             switch (posix.errno(result)) {
                 .SUCCESS => {},
                 else => |err| return posix.unexpectedErrno(err),
             }
         }
-    }
 
-    fn dropSetpcap() !void {
-        var header = CapHeader{ .version = CAP_VERSION_3, .pid = 0 };
-        var data = [2]CapData{
-            .{ .effective = 0, .permitted = 0, .inheritable = 0 },
-            .{ .effective = 0, .permitted = 0, .inheritable = 0 },
-        };
-
-        try capget(&header, &data);
-
-        const index: u32 = @as(u32, CAP_SETPCAP) / 32;
-        const bit: u32 = @as(u32, 1) << @intCast(@as(u32, CAP_SETPCAP) % 32);
-
-        data[index].effective &= ~bit;
-        data[index].permitted &= ~bit;
-        data[index].inheritable &= ~bit;
-
-        try capset(&header, &data);
-    }
-
-    fn prepare(allocator: mem.Allocator) !void {
-        _ = allocator;
-
-        const ambient_caps = [_]c_int{
-            CAP_NET_ADMIN,
-            CAP_NET_RAW,
-            CAP_NET_BIND_SERVICE,
-            CAP_SYS_PTRACE,
-            CAP_DAC_READ_SEARCH,
-        };
-
-        try setInheritableCaps(&ambient_caps);
-        try raiseAmbientCaps(&ambient_caps);
-        try dropSetpcap();
-    }
-} else struct {
-    const c = std.c;
-
-    fn isPrivileged(exe_path: []const u8) bool {
-        const file = fs.openFileAbsolute(exe_path, .{}) catch return false;
-        defer file.close();
-        var stat: c.Stat = undefined;
-        if (c.fstat(file.handle, &stat) != 0) return false;
-        const S_ISUID = 0o4000;
-        return stat.uid == 0 and stat.gid == 0 and (stat.mode & S_ISUID) != 0;
-    }
-
-    fn runElevated(allocator: mem.Allocator, command: []const u8) !void {
-        const script = try std.fmt.allocPrint(allocator, "do shell script \"{s}\" with administrator privileges", .{command});
-        defer allocator.free(script);
-
-        var child = std.process.Child.init(&.{ "osascript", "-e", script }, allocator);
-        child.stdin_behavior = .Ignore;
-        child.stdout_behavior = .Ignore;
-        child.stderr_behavior = .Ignore;
-
-        const term = try child.spawnAndWait();
-        switch (term) {
-            .Exited => |code| {
-                if (code == 0) return error.ElevationFailed;
-            },
-            else => {},
+        fn capset(header: *const CapHeader, data: *const [2]CapData) !void {
+            const result = linux.syscall2(.capset, @intFromPtr(header), @intFromPtr(data));
+            switch (posix.errno(result)) {
+                .SUCCESS => {},
+                else => |err| return posix.unexpectedErrno(err),
+            }
         }
-        return error.ElevationFailed;
-    }
 
-    fn prepare(allocator: mem.Allocator) !void {
-        const exe_path = try findSelfExePath();
-        if (isPrivileged(exe_path)) return;
+        fn setInheritableCaps(caps: []const c_int) !void {
+            var header = CapHeader{
+                .version = CAP_VERSION_3,
+                .pid = 0,
+            };
+            var data = [2]CapData{
+                .{ .effective = 0, .permitted = 0, .inheritable = 0 },
+                .{ .effective = 0, .permitted = 0, .inheritable = 0 },
+            };
 
-        const command = try std.fmt.allocPrint(allocator, "chown root:wheel {s} && chmod u+s {s}", .{ exe_path, exe_path });
-        defer allocator.free(command);
-        try runElevated(allocator, command);
-    }
+            try capget(&header, &data);
+
+            for (caps) |cap| {
+                const index: u32 = @intCast(@as(u32, @bitCast(cap)) / 32);
+                const bit: u32 = @as(u32, 1) << @intCast(@as(u32, @bitCast(cap)) % 32);
+
+                if (index >= 2) {
+                    std.debug.print("unsupported capability index: {d}\n", .{cap});
+                    return error.UnsupportedCap;
+                }
+                if ((data[index].permitted & bit) == 0) {
+                    std.debug.print("missing permitted capability: {d}\n", .{cap});
+                    return error.MissingPermittedCap;
+                }
+                data[index].inheritable |= bit;
+            }
+
+            try capset(&header, &data);
+        }
+
+        fn raiseAmbientCaps(caps: []const c_int) !void {
+            for (caps) |cap| {
+                const result = linux.prctl(PR_CAP_AMBIENT, PR_CAP_AMBIENT_RAISE, @intCast(cap), 0, 0);
+                switch (posix.errno(result)) {
+                    .SUCCESS => {},
+                    else => |err| return posix.unexpectedErrno(err),
+                }
+            }
+        }
+
+        fn dropSetpcap() !void {
+            var header = CapHeader{ .version = CAP_VERSION_3, .pid = 0 };
+            var data = [2]CapData{
+                .{ .effective = 0, .permitted = 0, .inheritable = 0 },
+                .{ .effective = 0, .permitted = 0, .inheritable = 0 },
+            };
+
+            try capget(&header, &data);
+
+            const index: u32 = @as(u32, CAP_SETPCAP) / 32;
+            const bit: u32 = @as(u32, 1) << @intCast(@as(u32, CAP_SETPCAP) % 32);
+
+            data[index].effective &= ~bit;
+            data[index].permitted &= ~bit;
+            data[index].inheritable &= ~bit;
+
+            try capset(&header, &data);
+        }
+
+        fn prepare(allocator: mem.Allocator) !void {
+            _ = allocator;
+
+            const ambient_caps = [_]c_int{
+                CAP_NET_ADMIN,
+                CAP_NET_RAW,
+                CAP_NET_BIND_SERVICE,
+                CAP_SYS_PTRACE,
+                CAP_DAC_READ_SEARCH,
+            };
+
+            try setInheritableCaps(&ambient_caps);
+            try raiseAmbientCaps(&ambient_caps);
+            try dropSetpcap();
+        }
+    },
+    .macos => struct {
+        const c = std.c;
+
+        fn isPrivileged(exe_path: []const u8) bool {
+            const file = fs.openFileAbsolute(exe_path, .{}) catch return false;
+            defer file.close();
+            var stat: c.Stat = undefined;
+            if (c.fstat(file.handle, &stat) != 0) return false;
+            const S_ISUID = 0o4000;
+            return stat.uid == 0 and stat.gid == 0 and (stat.mode & S_ISUID) != 0;
+        }
+
+        fn runElevated(allocator: mem.Allocator, command: []const u8) !void {
+            const script = try std.fmt.allocPrint(allocator, "do shell script \"{s}\" with administrator privileges", .{command});
+            defer allocator.free(script);
+
+            var child = std.process.Child.init(&.{ "osascript", "-e", script }, allocator);
+            child.stdin_behavior = .Ignore;
+            child.stdout_behavior = .Ignore;
+            child.stderr_behavior = .Ignore;
+
+            const term = try child.spawnAndWait();
+            switch (term) {
+                .Exited => |code| {
+                    if (code == 0) return error.ElevationFailed;
+                },
+                else => {},
+            }
+            return error.ElevationFailed;
+        }
+
+        fn prepare(allocator: mem.Allocator) !void {
+            const exe_path = try findSelfExePath();
+            if (isPrivileged(exe_path)) return;
+
+            const command = try std.fmt.allocPrint(allocator, "chown root:wheel {s} && chmod u+s {s}", .{ exe_path, exe_path });
+            defer allocator.free(command);
+            try runElevated(allocator, command);
+        }
+    },
+    .windows => struct {
+        fn prepare(allocator: mem.Allocator) !void {
+            _ = allocator;
+        }
+    },
+    else => unreachable,
 };
 
 var self_exe_buf: [fs.max_path_bytes]u8 = undefined;
@@ -253,6 +262,16 @@ fn resolveRuntimePaths(allocator: mem.Allocator) !RuntimePaths {
     const launcher_dir = try allocator.dupe(u8, launcher_dir_slice);
     errdefer allocator.free(launcher_dir);
 
+    const direct_jar_path = try std.fmt.allocPrint(allocator, "{s}/app/{s}.jar", .{ launcher_dir_slice, husi_package_name });
+    if (fileExists(direct_jar_path)) {
+        return RuntimePaths{
+            .launcher_dir = launcher_dir,
+            .app_root = launcher_dir,
+            .jar_path = direct_jar_path,
+        };
+    }
+    allocator.free(direct_jar_path);
+
     const app_root_slice = fs.path.dirname(launcher_dir_slice) orelse return error.BadExePath;
     const app_root = try allocator.dupe(u8, app_root_slice);
     errdefer allocator.free(app_root);
@@ -316,6 +335,9 @@ fn resolveConfigBase(allocator: mem.Allocator) ![]u8 {
             const home = try process.getEnvVarOwned(allocator, "HOME");
             defer allocator.free(home);
             return std.fmt.allocPrint(allocator, "{s}/Library/Application Support", .{home});
+        },
+        .windows => {
+            return try std.process.getEnvVarOwned(allocator, "APPDATA");
         },
         else => unreachable,
     }
@@ -387,10 +409,8 @@ fn selectJavaCommand(allocator: mem.Allocator) ![]const u8 {
         if (java_env.len > 0) return java_env;
         allocator.free(java_env);
     }
-    if (native_os == .macos) {
-        if (try resolveMacOSJavaHome(allocator)) |java_bin| {
-            return java_bin;
-        }
+    if (try resolveMacOSJavaHome(allocator)) |java_bin| {
+        return java_bin;
     }
     return allocator.dupe(u8, "java");
 }

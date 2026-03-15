@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	"libcore/oscall"
 	"libcore/ringqueue"
 	"libcore/vario"
 
@@ -82,7 +83,7 @@ func setupLog(maxLogLine int, path string, level log.Level, notTruncateOnStart b
 	if C.IsAndroid {
 		fd := int(file.Fd())
 		// redirect stderr
-		_ = dup(fd, int(os.Stderr.Fd()), 0)
+		_ = oscall.Dup3(fd, int(os.Stderr.Fd()), 0)
 	} else {
 		writers = append(writers, os.Stderr)
 	}
@@ -201,8 +202,8 @@ func (w *logWriter) Write(p []byte) (n int, err error) {
 	for _, writer := range w.writers {
 		var unlock func() error
 		if file, isFile := writer.(*os.File); isFile {
-			fd := int(file.Fd())
-			unlock = flock(fd)
+			_ = oscall.Flock(file)
+			unlock = func() error { return oscall.FUnlock(file) }
 		}
 		_, _ = writer.Write(p)
 		if unlock != nil {
@@ -215,12 +216,9 @@ func (w *logWriter) Write(p []byte) (n int, err error) {
 func (w *logWriter) truncate() {
 	for _, writer := range w.writers {
 		if file, isFile := writer.(*os.File); isFile {
-			fd := int(file.Fd())
-			unlock := flock(fd)
+			_ = oscall.Flock(file)
 			_ = file.Truncate(0)
-			if unlock != nil {
-				_ = unlock()
-			}
+			_ = oscall.FUnlock(file)
 		}
 	}
 }

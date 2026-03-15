@@ -6,16 +6,17 @@ CLIP = sh -c 'if [ -n "$$WAYLAND_DISPLAY" ]; then exec wl-copy; \
               else echo "No display detected (WAYLAND_DISPLAY/DISPLAY missing)"; exit 1; fi'
 DESKTOP_TARGETS_COMMON = linux/amd64,linux/arm64,darwin/amd64,darwin/arm64,windows/amd64,windows/arm64
 DESKTOP_TARGETS_LINUX = linux/amd64 linux/arm64
+DESKTOP_TARGETS_WINDOWS = windows/amd64 windows/arm64
 LINUX_PACKAGE_FORMATS ?= deb,rpm,pacman
 HOST_OS = $(shell uname -s)
 DESKTOP_TARGET_GRADLE_ARG = $(if $(DESKTOP_TARGET),-PdesktopTarget=$(DESKTOP_TARGET),)
 DESKTOP_TARGET_SCRIPT_ARG = $(if $(DESKTOP_TARGET),--target $(DESKTOP_TARGET),)
 JNI_INCLUDE_SCRIPT_ARG = $(if $(JNI_INCLUDE),--jniinclude "$(JNI_INCLUDE)",)
 DARWIN_SDK_SCRIPT_ARG = $(if $(DARWIN_SDK),--darwinsdk "$(DARWIN_SDK)",)
-LAUNCHER_ZIG_TARGET = $(subst linux/amd64,x86_64-linux-musl,$(subst linux/arm64,aarch64-linux-musl,$(subst darwin/amd64,x86_64-macos,$(subst darwin/arm64,aarch64-macos,$(DESKTOP_TARGET)))))
+LAUNCHER_ZIG_TARGET = $(subst linux/amd64,x86_64-linux-musl,$(subst linux/arm64,aarch64-linux-musl,$(subst darwin/amd64,x86_64-macos,$(subst darwin/arm64,aarch64-macos,$(subst windows/amd64,x86_64-windows,$(subst windows/arm64,aarch64-windows,$(DESKTOP_TARGET)))))))
 LAUNCHER_ZIG_TARGET_ARG = $(if $(LAUNCHER_ZIG_TARGET),-Dtarget=$(LAUNCHER_ZIG_TARGET),)
 
-.PHONY: update libcore libcore_android libcore_desktop_common libcore_desktop apk apk_debug assets desktop desktop_release desktop_package desktop_package_linux desktop_package_linux_all desktop_package_macos desktop_uberjar launcher lint_go test_go plugin generate_option
+.PHONY: update libcore libcore_android libcore_desktop_common libcore_desktop apk apk_debug assets desktop desktop_release desktop_package desktop_package_linux desktop_package_linux_all desktop_package_macos desktop_package_windows desktop_package_windows_all desktop_uberjar launcher lint_go test_go plugin generate_option
 
 build: libcore_android assets apk
 
@@ -46,8 +47,10 @@ ifeq ($(HOST_OS),Linux)
 	$(MAKE) desktop_package_linux $(if $(DESKTOP_TARGET),DESKTOP_TARGET=$(DESKTOP_TARGET),) LINUX_PACKAGE_FORMATS=$(LINUX_PACKAGE_FORMATS)
 else ifeq ($(HOST_OS),Darwin)
 	$(MAKE) desktop_package_macos $(if $(DESKTOP_TARGET),DESKTOP_TARGET=$(DESKTOP_TARGET),)
+else ifneq (,$(filter MINGW% MSYS% CYGWIN%,$(HOST_OS)))
+	$(MAKE) desktop_package_windows $(if $(DESKTOP_TARGET),DESKTOP_TARGET=$(DESKTOP_TARGET),)
 else
-	@echo "desktop_package only supports Linux or macOS hosts."
+	@echo "desktop_package only supports Linux, macOS or Windows/MSYS hosts."
 	@exit 1
 endif
 
@@ -70,6 +73,21 @@ desktop_package_macos:
 	BUILD_PLUGIN=none ./gradlew -p composeApp packageUberJarForCurrentOS $(DESKTOP_TARGET_GRADLE_ARG)
 	$(MAKE) launcher
 	./release/macos/package.sh $(DESKTOP_TARGET_SCRIPT_ARG)
+
+desktop_package_windows:
+	@if [ -z "$(DESKTOP_TARGET)" ]; then \
+		echo "desktop_package_windows requires DESKTOP_TARGET, e.g. make desktop_package_windows DESKTOP_TARGET=windows/amd64"; \
+		exit 1; \
+	fi
+	BUILD_PLUGIN=none ./gradlew -p composeApp packageUberJarForCurrentOS $(DESKTOP_TARGET_GRADLE_ARG)
+	$(MAKE) launcher
+	./release/windows/package.sh $(DESKTOP_TARGET_SCRIPT_ARG)
+
+desktop_package_windows_all:
+	$(MAKE) libcore_desktop DESKTOP_TARGETS=windows/amd64,windows/arm64
+	@for desktop_target in $(DESKTOP_TARGETS_WINDOWS); do \
+		$(MAKE) desktop_package_windows DESKTOP_TARGET=$$desktop_target || exit $$?; \
+	done
 
 desktop_uberjar:
 	BUILD_PLUGIN=none ./gradlew packageUberJarForCurrentOS $(DESKTOP_TARGET_GRADLE_ARG)

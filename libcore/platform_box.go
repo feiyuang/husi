@@ -4,6 +4,7 @@ import (
 	"net/netip"
 	"os"
 	"sync"
+	"syscall"
 
 	"github.com/sagernet/sing-box/adapter"
 	C "github.com/sagernet/sing-box/constant"
@@ -15,10 +16,9 @@ import (
 	"github.com/sagernet/sing/common/logger"
 	N "github.com/sagernet/sing/common/network"
 
+	"libcore/oscall"
 	"libcore/procfs"
 	"libcore/protect"
-
-	"golang.org/x/sys/unix"
 )
 
 type boxPlatformInterfaceWrapper struct {
@@ -80,9 +80,9 @@ func (w *boxPlatformInterfaceWrapper) OpenInterface(options *tun.Options, platfo
 		return nil, E.Cause(err, "tunnelName")
 	}
 	options.InterfaceMonitor.RegisterMyInterface(options.Name)
-	dupFd, err := unix.Dup(int(tunFd))
+	dupFd, err := oscall.Dup(int(tunFd))
 	if err != nil {
-		return nil, E.Cause(err, "unix.Dup")
+		return nil, E.Cause(err, "oscall.Dup")
 	}
 	options.FileDescriptor = dupFd
 	w.myTunName = options.Name
@@ -183,9 +183,9 @@ func (w *boxPlatformInterfaceWrapper) FindConnectionOwner(request *adapter.FindC
 
 		var network string
 		switch request.IpProtocol {
-		case int32(unix.IPPROTO_TCP):
+		case int32(syscall.IPPROTO_TCP):
 			network = N.NetworkTCP
-		case int32(unix.IPPROTO_UDP):
+		case int32(syscall.IPPROTO_UDP):
 			network = N.NetworkUDP
 		default:
 			return nil, E.New("unknown protocol: ", request.IpProtocol)
