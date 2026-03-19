@@ -10,7 +10,6 @@ pub fn build(b: *std.Build) void {
 
     const exe = b.addExecutable(.{
         .name = b.fmt("launcher-{s}-{s}", .{ @tagName(target.result.os.tag), @tagName(target.result.cpu.arch) }),
-        .win32_manifest = b.path("launcher.manifest"),
         .root_module = b.createModule(.{
             .root_source_file = b.path("src/main.zig"),
             .target = target,
@@ -21,7 +20,11 @@ pub fn build(b: *std.Build) void {
             },
         }),
     });
-    exe.root_module.addWin32ResourceFile(.{ .file = b.path("icon.rc") });
+    if (target.result.os.tag == .windows) {
+        exe.win32_manifest = b.path("launcher.manifest");
+        exe.subsystem = .Windows;
+        exe.root_module.addWin32ResourceFile(.{ .file = b.path("icon.rc") });
+    }
 
     b.installArtifact(exe);
 
