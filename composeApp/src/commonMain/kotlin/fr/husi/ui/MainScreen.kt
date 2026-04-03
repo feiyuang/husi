@@ -5,8 +5,9 @@ package fr.husi.ui
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -29,7 +30,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavKey
@@ -526,7 +530,20 @@ private fun MainScreenContent(
             title = { Text(stringOrRes(dialog.title)) },
             text = {
                 val scrollState = rememberScrollState()
-                Row {
+                val scrollbarThickness = 12.dp
+                val scrollbarSpacing = 4.dp
+                val density = LocalDensity.current
+                val windowInfo = LocalWindowInfo.current
+                val maxTextHeight =
+                    with(density) { windowInfo.containerSize.height.toDp() }.takeIf { it > 0.dp }
+                        ?.times(0.8f)
+                        ?: 480.dp
+                var viewportHeight by remember { mutableStateOf(0) }
+                Row(
+                    modifier = Modifier
+                        .heightIn(max = maxTextHeight)
+                        .onSizeChanged { viewportHeight = it.height },
+                ) {
                     Column(
                         modifier = Modifier
                             .weight(1f)
@@ -535,13 +552,17 @@ private fun MainScreenContent(
                         Text(stringOrRes(dialog.message))
                     }
 
-                    BoxedVerticalScrollbar(
-                        modifier = Modifier.fillMaxHeight(),
-                        adapter = rememberScrollbarAdapter(scrollState = scrollState),
-                        style = defaultMaterialScrollbarStyle().copy(
-                            thickness = 12.dp,
-                        ),
-                    )
+                    if (viewportHeight > 0) {
+                        BoxedVerticalScrollbar(
+                            modifier = Modifier
+                                .padding(start = scrollbarSpacing)
+                                .height(with(density) { viewportHeight.toDp() }),
+                            adapter = rememberScrollbarAdapter(scrollState = scrollState),
+                            style = defaultMaterialScrollbarStyle().copy(
+                                thickness = scrollbarThickness,
+                            ),
+                        )
+                    }
                 }
             },
         )
