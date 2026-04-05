@@ -703,4 +703,6 @@
     <string name="hysteria_bbr_profile_conservative">Консервативный</string>
     <string name="hysteria_bbr_profile_standard">Стандартный</string>
     <string name="hysteria_bbr_profile_aggressive">Агрессивный</string>
+    <string name="privacy_mode_summary">Запретить скриншоты и запись экрана, а также скрыть содержимое в списке недавних приложений</string>
+    <string name="privacy_mode">Приватный Режим</string>
 </resources>
