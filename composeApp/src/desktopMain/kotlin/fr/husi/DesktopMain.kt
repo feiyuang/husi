@@ -34,7 +34,6 @@ import fr.husi.resources.app_name
 import fr.husi.resources.close
 import fr.husi.resources.exit
 import fr.husi.resources.ic_service_active
-import fr.husi.resources.ic_service_rest
 import fr.husi.resources.instance_already_running
 import fr.husi.resources.instance_already_running_title
 import fr.husi.resources.service_mode
@@ -97,7 +96,7 @@ fun main(args: Array<String>) {
                 // In fact, whether on macOS, Windows, or Linux, the advanced tray consistently throws "java.lang.UnsupportedOperationException: java.awt.Menu doesn't support mnemonic."
                 val supportAdvancedTray = false
                 Tray(
-                    icon = painterResource(Res.drawable.ic_service_rest),
+                    icon = painterResource(Res.drawable.ic_service_active),
                     state = trayState,
                     tooltip = stringResource(Res.string.app_name),
                     onAction = ::openWindow,
