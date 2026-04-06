@@ -1,6 +1,5 @@
 const std = @import("std");
 const builtin = @import("builtin");
-const posix = std.posix;
 const fs = std.fs;
 const mem = std.mem;
 const process = std.process;
@@ -19,8 +18,10 @@ const husi_package_name = config.package_name;
 const husi_config_dir_name = "husi";
 const husi_exit_restart = 50;
 
+/// `prepare` returns a boolean about wheather restart or not.
 const PlatformPrivilege = switch (native_os) {
     .linux => struct {
+        const posix = std.posix;
         const linux = std.os.linux;
 
         const CAP_VERSION_3: u32 = 0x20080522;
@@ -120,7 +121,7 @@ const PlatformPrivilege = switch (native_os) {
             try capset(&header, &data);
         }
 
-        fn prepare(allocator: mem.Allocator) !void {
+        fn prepare(allocator: mem.Allocator) !bool {
             _ = allocator;
 
             const ambient_caps = [_]c_int{
@@ -134,6 +135,7 @@ const PlatformPrivilege = switch (native_os) {
             try setInheritableCaps(&ambient_caps);
             try raiseAmbientCaps(&ambient_caps);
             try dropSetpcap();
+            return false;
         }
     },
     .macos => struct {
@@ -160,25 +162,28 @@ const PlatformPrivilege = switch (native_os) {
             const term = try child.spawnAndWait();
             switch (term) {
                 .Exited => |code| {
-                    if (code == 0) return error.ElevationFailed;
+                    if (code == 0) return;
                 },
                 else => {},
             }
             return error.ElevationFailed;
         }
 
-        fn prepare(allocator: mem.Allocator) !void {
+        fn prepare(allocator: mem.Allocator) !bool {
             const exe_path = try findSelfExePath();
-            if (isPrivileged(exe_path)) return;
+            if (isPrivileged(exe_path)) return false;
 
             const command = try std.fmt.allocPrint(allocator, "chown root:wheel {s} && chmod u+s {s}", .{ exe_path, exe_path });
             defer allocator.free(command);
             try runElevated(allocator, command);
+            return true;
         }
     },
     .windows => struct {
-        fn prepare(allocator: mem.Allocator) !void {
+        // Already got via mainfest
+        fn prepare(allocator: mem.Allocator) !bool {
             _ = allocator;
+            return false;
         }
     },
     else => unreachable,
@@ -193,6 +198,16 @@ fn findSelfExePath() ![]const u8 {
     }
     self_path = try fs.selfExePath(&self_exe_buf);
     return self_path.?;
+}
+
+fn restartSelf(allocator: mem.Allocator) !u8 {
+    const proc_args = try process.argsAlloc(allocator);
+    var child = process.Child.init(proc_args, allocator);
+    child.stdin_behavior = .Inherit;
+    child.stdout_behavior = .Inherit;
+    child.stderr_behavior = .Inherit;
+    try child.spawn();
+    return 0;
 }
 
 fn readArgsFile(allocator: mem.Allocator, path: []const u8, list: *ArrayList([]u8)) !void {
@@ -420,9 +435,13 @@ pub fn main() !u8 {
     defer arena.deinit();
     const allocator = arena.allocator();
 
-    PlatformPrivilege.prepare(allocator) catch |err| {
+    const relaunch_required = PlatformPrivilege.prepare(allocator) catch |err| onFailed: {
         std.debug.print("WARN: prepare_launch_environment failed: {}\n", .{err});
+        break :onFailed false;
     };
+    if (relaunch_required) {
+        return restartSelf(allocator);
+    }
 
     const runtime = resolveRuntimePaths(allocator) catch |err| {
         std.debug.print("resolve_runtime_paths failed: {}\n", .{err});
