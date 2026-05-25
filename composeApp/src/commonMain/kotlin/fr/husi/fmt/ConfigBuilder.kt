@@ -1060,8 +1060,8 @@ fun buildConfig(
                 }
 
                 if (!forTest) {
-                    if (disableTcpKeepAlive) {
-                        disable_tcp_keep_alive = true
+                    if (!disableTcpKeepAlive) {
+                        disable_tcp_keep_alive = false
                         tcp_keep_alive = tcpKeepAliveIdle
                         tcp_keep_alive_interval = tcpKeepAliveInterval
                     }
